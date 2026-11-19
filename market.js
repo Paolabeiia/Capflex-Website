@@ -275,15 +275,42 @@
   }
   function submitSignIn(e) {
     e.preventDefault();
-    var email = $('#si-email').value.trim();
+    var email = $('#si-email').value.trim(), pass = $('#si-pass').value;
+    $('#si-error').textContent = ''; $('#si-msg').textContent = '';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#si-error').textContent = 'Enter a valid email address.'; return; }
+    if (!pass) { $('#si-error').textContent = 'Enter your password, or use the email link.'; return; }
     var btn = $('#si-submit'); btn.disabled = true;
-    sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) {
+    sb.auth.signInWithPassword({ email: email, password: pass }).then(function (r) {
       btn.disabled = false;
-      if (r.error) { $('#si-error').textContent = /not authori[sz]ed/i.test(r.error.message || '') ? 'Sign-in is open to the Capflex team for now. Write to Capflex to get access.' : 'Could not send the link: ' + r.error.message; return; }
+      if (r.error) { $('#si-error').textContent = /invalid/i.test(r.error.message || '') ? 'Email or password is wrong.' : 'Could not sign in: ' + r.error.message; return; }
+      $('#si-pass').value = '';
+      $('#dlg-signin').close();
+      toast('Signed in as ' + email + '.');
+      if (location.hash !== '#matches' && ['#matches', '#map', '#projects', '#listings', '#rules', '#desk'].indexOf(location.hash) < 0) location.hash = 'matches';
+    });
+  }
+  function sendSignInLink() {
+    var email = $('#si-email').value.trim();
+    $('#si-error').textContent = ''; $('#si-msg').textContent = '';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#si-error').textContent = 'Enter your email first.'; return; }
+    sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) {
+      if (r.error) { $('#si-error').textContent = /not authori[sz]ed/i.test(r.error.message || '') ? 'Sign-in links go to the Capflex team only for now.' : /rate limit/i.test(r.error.message || '') ? 'Too many emails right now. Use your password, or try again in an hour.' : 'Could not send the link: ' + r.error.message; return; }
       $('#si-msg').textContent = 'Check your inbox: we sent a sign-in link to ' + email + '.';
     });
   }
+  function submitPassword(e) {
+    e.preventDefault();
+    var pw = $('#pw-new').value;
+    $('#pw-error').textContent = ''; $('#pw-msg').textContent = '';
+    if (pw.length < 8) { $('#pw-error').textContent = 'Use at least 8 characters.'; return; }
+    var btn = $('#pw-submit'); btn.disabled = true;
+    sb.auth.updateUser({ password: pw }).then(function (r) {
+      btn.disabled = false;
+      if (r.error) { $('#pw-error').textContent = 'Could not save: ' + r.error.message; return; }
+      $('#pw-new').value = ''; $('#dlg-pass').close(); toast('Password changed.');
+    });
+  }
+
 
   /* ---------- header: live numbers, tabs, status ---------- */
   function renderHead() {
@@ -293,7 +320,7 @@
       st.lastElementChild.textContent = state.mode === 'db' ? 'Live marketplace' : state.mode === 'local' ? 'Offline preview' : 'Connecting';
     }
     var au = $('#auth');
-    if (au) au.innerHTML = !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button>';
+    if (au) au.innerHTML = !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button>';
     var role = ROLES[state.role] ? state.role : 'developer';
     var rs = $('#roles');
     if (rs) rs.innerHTML = '<span>View as</span>' + Object.keys(ROLES).filter(function (r) { return !ROLES[r].owner || state.isOwner; }).map(function (r) {
@@ -965,6 +992,8 @@
     else if (a === 'withdraw') withdraw(id);
     else if (a === 'remove-demo') removeDemo();
     else if (a === 'signin') openSignIn();
+    else if (a === 'signin-link') sendSignInLink();
+    else if (a === 'password') { var dp = $('#dlg-pass'); if (dp) { $('#pw-msg').textContent = ''; $('#pw-error').textContent = ''; dp.showModal(); } }
     else if (a === 'signout') { if (sb) sb.auth.signOut(); }
     else if (a === 'ask') { state.confirm = t.getAttribute('data-key'); render(); }
     else if (a === 'no') { state.confirm = null; render(); }
@@ -998,6 +1027,7 @@
   var fo = $('#form-offer'); if (fo) fo.addEventListener('submit', submitSite);
   var fp = $('#form-project'); if (fp) fp.addEventListener('submit', submitProject);
   var fs = $('#form-signin'); if (fs) fs.addEventListener('submit', submitSignIn);
+  var fw = $('#form-pass'); if (fw) fw.addEventListener('submit', submitPassword);
   $$('[data-close]').forEach(function (b) { b.addEventListener('click', function () { b.closest('dialog').close(); }); });
 
   // Keep countdowns current without re-rendering forms.

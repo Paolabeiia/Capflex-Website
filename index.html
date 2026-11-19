@@ -311,18 +311,42 @@
     <div class="dlg-head">
       <div>
         <h2 id="si-title">Sign in</h2>
-        <p>We email you a link. No password. Your company stays private in the marketplace.</p>
+        <p>Sign in with your email and password. Your company stays private in the marketplace.</p>
       </div>
       <button class="btn btn-quiet btn-small" type="button" data-close aria-label="Close">Close</button>
     </div>
     <div class="dlg-body">
       <label class="f"><span>Email</span><input id="si-email" type="email" autocomplete="email" required></label>
+      <label class="f" style="margin-top:12px"><span>Password</span><input id="si-pass" type="password" autocomplete="current-password"></label>
       <p class="mk-dim" id="si-msg" role="status"></p>
+      <button class="linkbtn" type="button" data-action="signin-link" style="font-size:13px;margin-top:4px">Email me a sign-in link instead</button>
     </div>
     <div class="dlg-foot">
       <span class="form-error" id="si-error" role="alert"></span>
       <button class="btn" type="button" data-close>Cancel</button>
-      <button class="btn btn-dark" type="submit" id="si-submit">Send sign-in link</button>
+      <button class="btn btn-dark" type="submit" id="si-submit">Sign in</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Change password -->
+<dialog id="dlg-pass" class="dlg-fine dlg-small" aria-labelledby="pw-title">
+  <form id="form-pass" novalidate>
+    <div class="dlg-head">
+      <div>
+        <h2 id="pw-title">Change password</h2>
+        <p>At least 8 characters.</p>
+      </div>
+      <button class="btn btn-quiet btn-small" type="button" data-close aria-label="Close">Close</button>
+    </div>
+    <div class="dlg-body">
+      <label class="f"><span>New password</span><input id="pw-new" type="password" autocomplete="new-password" minlength="8" required></label>
+      <p class="mk-dim" id="pw-msg" role="status"></p>
+    </div>
+    <div class="dlg-foot">
+      <span class="form-error" id="pw-error" role="alert"></span>
+      <button class="btn" type="button" data-close>Cancel</button>
+      <button class="btn btn-dark" type="submit" id="pw-submit">Save password</button>
     </div>
   </form>
 </dialog>
