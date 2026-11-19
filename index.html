@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Capflex · Skip the queue</title>
+<meta name="description" content="Capflex plugs new energy projects into grid capacity that factories already have. Site Match is the anonymous marketplace for that capacity.">
+<meta property="og:title" content="Capflex · Skip the queue">
+<meta property="og:description" content="Plug new energy projects into grid capacity that factories already have.">
+<link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="leaflet.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="market.css">
+<style>.dlg-small{width:min(460px,calc(100vw - 32px))}.dlg-small .dlg-body{display:block}.mk-auth{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mk-slate2)}.mk-auth > span{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="Capflex home">
+      <img class="brand-logo" src="brand/capflex-logo.svg" alt="Capflex" width="137" height="24">
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#film" class="nav-sec">How it works</a>
+      <a href="#what" class="nav-sec">What we do</a>
+      <a href="#matches" class="nav-app">Site Match</a>
+    </nav>
+  </div>
+</header>
+
+<div id="home">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <h1 id="hero-title">Skip the queue.</h1>
+      <p class="lede">Plug new energy projects into grid capacity that factories already have.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary btn-lg" type="button" data-action="new-project" data-requires-write>Register a project</button>
+        <button class="btn btn-lg" type="button" data-action="new-site" data-requires-write>Offer capacity</button>
+      </div>
+      <div class="hero-art">
+        <svg id="hx-scene" viewBox="0 10 960 320" role="img" aria-label="The Capflex socket is wired into the power grid and runs away. The lime plug, almost empty, catches it and plugs in. Grid power charges the plug, and the two become the Capflex logo.">
+      <defs>
+        <clipPath id="hx-wclip"><rect id="hx-wclip-r" x="180" y="0" width="0" height="140"></rect></clipPath>
+        <clipPath id="hx-plugclip"><rect x="-20" y="-56" width="40" height="56" rx="12"></rect></clipPath>
+      </defs>
+      <g id="hx-world">
+        <g id="hx-grid" fill="none">
+          <path id="hx-pylons" class="st-grid" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path id="hx-wire" class="st-grid" stroke-width="3" stroke-linecap="round"></path>
+        </g>
+        <circle id="hx-ring" class="st-ring" cx="95" cy="50" r="0" fill="none" stroke-width="4" opacity="0"></circle>
+        <g id="hx-sparks" stroke-linecap="round" stroke-width="4"></g>
+        <ellipse id="hx-sh-s" class="fl-shadow" cx="49" cy="104" rx="40" ry="5"></ellipse>
+        <ellipse id="hx-sh-p" class="fl-shadow" cx="134" cy="104" rx="22" ry="4"></ellipse>
+        <path id="hx-tether" class="ln" stroke-width="4" stroke-linecap="round" fill="none"></path>
+        <circle id="hx-trolley" class="ln fl-wheel" r="5.5" stroke-width="3.5"></circle>
+        <g id="hx-legs" class="ln" stroke-width="7" stroke-linecap="round" fill="none">
+          <line id="hx-lg-s1"></line><line id="hx-lg-s2"></line><line id="hx-lg-p1"></line><line id="hx-lg-p2"></line>
+        </g>
+        <g id="hx-cable-g" class="ln" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path id="hx-cable" stroke-width="6"></path>
+          <path id="hx-fray" stroke-width="2.5"></path>
+        </g>
+        <g id="hx-dots"></g>
+        <g id="hx-plug">
+          <line class="ln" x1="-38" y1="-40" x2="-20" y2="-40" stroke-width="8"></line>
+          <line class="ln" x1="-38" y1="-16" x2="-20" y2="-16" stroke-width="8"></line>
+          <rect class="fl-empty" x="-20" y="-56" width="40" height="56" rx="12"></rect>
+          <rect id="hx-plug-level" x="-22" y="-14" width="44" height="14" fill="#B5DE5C" clip-path="url(#hx-plugclip)"></rect>
+          <rect class="ln" x="-20" y="-56" width="40" height="56" rx="12" fill="none" stroke-width="7"></rect>
+        </g>
+        <g id="hx-socket">
+          <circle class="ln fl-wheel" cx="0" cy="-76" r="3.5" stroke-width="3"></circle>
+          <rect class="ln" x="-43" y="-72" width="86" height="72" rx="18" fill="#E5E1F7" stroke-width="7"></rect>
+          <g id="hx-eyes">
+            <g id="hx-eye-l"><circle class="fl-hole" cx="0" cy="0" r="8"></circle><circle class="fl-shine eye-shine" cx="2.6" cy="-2.6" r="2.2"></circle></g>
+            <g id="hx-eye-r"><circle class="fl-hole" cx="0" cy="0" r="8"></circle><circle class="fl-shine eye-shine" cx="2.6" cy="-2.6" r="2.2"></circle></g>
+          </g>
+          <g id="hx-happy" class="st-hole" stroke-width="4.5" stroke-linecap="round" fill="none" opacity="0">
+            <path d="M-20 -34 Q-13 -43 -6 -34"></path>
+            <path d="M6 -34 Q13 -43 20 -34"></path>
+          </g>
+          <path id="hx-sweat" d="M0 -6 C3 -1 5 2 5 4 A5 5 0 0 1 -5 4 C-5 2 -3 -1 0 -6 Z" fill="#1F6E7A" opacity="0"></path>
+        </g>
+        <g id="hx-bolt" opacity="0">
+          <path d="M19 3 L7 18 H15 L12 29 L25 13 H17 Z" transform="translate(-16 -16)" fill="#B5DE5C" class="ln" stroke-width="2.6" stroke-linejoin="round"></path>
+        </g>
+        <g id="hx-word" clip-path="url(#hx-wclip)">
+          <g id="hx-word-in"><path class="fl-line" transform="scale(0.8)" d="M297.392 64.55199999999999H276.548Q276.548 54.832 265.964 54.832Q255.38 54.832 255.38 67.036V73.19200000000001Q255.38 85.288 266.396 85.288Q277.412 85.288 277.412 75.352H297.392Q297.392 87.772 288.698 93.82000000000001Q280.004 99.86800000000001 265.964 99.86800000000001Q250.952 99.86800000000001 242.42000000000002 92.308Q233.888 84.748 233.888 70.06Q233.888 55.372 242.42000000000002 47.812Q250.952 40.252 265.964 40.252Q280.004 40.252 288.698 46.246Q297.392 52.24 297.392 64.55199999999999ZM363.188 58.828V81.07600000000001Q363.188 82.912 364.052 84.1Q364.916 85.288 366.644 85.288H370.532V97.708Q370.20799999999997 97.924 368.85799999999995 98.41Q367.508 98.896 365.024 99.382Q362.54 99.86800000000001 359.3 99.86800000000001Q353.036 99.86800000000001 348.986 97.97800000000001Q344.936 96.08800000000001 343.424 92.74000000000001Q339.32 95.98 334.244 97.924Q329.168 99.86800000000001 322.364 99.86800000000001Q302.276 99.86800000000001 302.276 83.884Q302.276 75.568 306.75800000000004 71.194Q311.24 66.82000000000001 319.664 65.2Q328.088 63.580000000000005 341.696 63.580000000000005V60.772000000000006Q341.696 57.42400000000001 339.374 55.696000000000005Q337.052 53.968 333.38 53.968Q330.032 53.968 327.602 55.156000000000006Q325.172 56.344 325.172 58.936V59.368H304.004Q303.896 58.828 303.896 57.856Q303.896 49.756 311.618 45.004000000000005Q319.34 40.252 333.704 40.252Q346.772 40.252 354.98 44.626000000000005Q363.188 49.0 363.188 58.828ZM323.76800000000003 81.07600000000001Q323.76800000000003 86.476 331.112 86.476Q335.324 86.476 338.51 84.208Q341.696 81.94 341.696 78.592V73.732Q332.516 73.732 328.14200000000005 75.73Q323.76800000000003 77.72800000000001 323.76800000000003 81.07600000000001ZM436.22 70.168Q436.22 84.85600000000001 429.956 92.36200000000001Q423.692 99.86800000000001 412.136 99.86800000000001Q402.2 99.86800000000001 396.152 93.388V119.848H374.66V41.548H392.156L393.992 49.648Q400.256 40.252 412.136 40.252Q423.692 40.252 429.956 47.812Q436.22 55.372 436.22 70.168ZM395.936 68.224V71.78800000000001Q395.936 77.188 398.312 80.59Q400.688 83.992 405.44 83.992Q414.728 83.992 414.728 72.868V67.144Q414.728 56.128 405.44 56.128Q400.688 56.128 398.312 59.476Q395.936 62.824000000000005 395.936 68.224ZM478.472 20.92V33.556H473.504Q470.048 33.556 468.752 34.852000000000004Q467.456 36.148 467.456 39.28V41.548H478.472V56.128H467.456V98.572H445.964V56.128H437.972V41.548H445.964V39.172000000000004Q445.964 28.156000000000006 451.36400000000003 23.566000000000003Q456.764 18.976 466.808 18.976Q469.184 18.976 472.74800000000005 19.57Q476.312 20.164 478.472 20.92ZM483.356 98.572V20.272000000000006H504.848V98.572ZM577.232 70.06V73.732H534.464Q534.464 79.888 537.2180000000001 83.02000000000001Q539.972 86.152 545.912 86.152Q551.312 86.152 553.85 83.884Q556.388 81.616 556.388 77.836H577.232Q577.232 88.20400000000001 569.348 94.036Q561.464 99.86800000000001 546.344 99.86800000000001Q530.468 99.86800000000001 521.72 92.47Q512.972 85.072 512.972 70.06Q512.972 55.372 521.504 47.812Q530.0360000000001 40.252 545.048 40.252Q560.708 40.252 568.97 47.596000000000004Q577.232 54.940000000000005 577.232 70.06ZM534.572 63.580000000000005H555.524Q555.524 59.152 552.986 56.56Q550.448 53.968 545.912 53.968Q535.76 53.968 534.572 63.580000000000005ZM649.616 98.572H624.56L613.76 80.644H613.328L602.42 98.572H578.552L600.476 68.33200000000001L580.712 41.548H605.984L615.056 56.668000000000006H615.488L624.56 41.548H648.32L628.232 68.872Z"></path></g>
+        </g>
+      </g>
+    </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec film" id="film" aria-labelledby="film-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">How it works</p>
+        <h2 id="film-title">One connection. More projects.</h2>
+        <p class="sec-lede">A factory's grid connection is sized for its peak, and most of the time a large part of it sits unused. We find that spare capacity and plug new projects into it.</p>
+      </div>
+      <figure class="film-frame">
+        <video id="film-video" src="capflex-site-film.mp4" poster="film-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="3D film of a factory site: its grid connection has unused capacity, then a battery, a solar park and a truck-charging hub are placed on that same connection and power flows."></video>
+      </figure>
+      <ol class="steps3">
+        <li><span class="n">01</span><h3>Find</h3><p>We read the site's connection agreement and a year of 15-minute load data to see how much capacity is free, and when.</p></li>
+        <li><span class="n">02</span><h3>Match</h3><p>We score batteries, solar, data centres and other energy projects against the site: capacity, space, voltage level, location and timing.</p></li>
+        <li><span class="n">03</span><h3>Connect</h3><p>Both sides sign, a controller keeps the site within its contracted capacity, and the grid operator is notified. No new connection.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec what" id="what" aria-labelledby="what-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">What we do</p>
+        <h2 id="what-title">We bring the site to you.</h2>
+        <p class="sec-lede">Developers stop searching for land and waiting for a connection. Factories stop leaving capacity idle.</p>
+      </div>
+      <div class="what-grid">
+        <article class="what-card">
+          <p class="k">For project developers</p>
+          <h3>Ready sites, not queues.</h3>
+          <p>Factories with spare connection capacity and free land, checked against your project before you pick up the phone.</p>
+        </article>
+        <article class="what-card flex">
+          <p class="k">For factories</p>
+          <h3>Income from capacity you already pay for.</h3>
+          <p>Lease the land or share the revenue. Your own load always keeps priority on the connection.</p>
+        </article>
+        <article class="what-card">
+          <p class="k">For the grid</p>
+          <h3>More projects on existing lines.</h3>
+          <p>Connections that already exist carry more, so new projects don't have to wait for grid expansion.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec proof" aria-label="Why it matters">
+    <div class="wrap">
+      <div class="strip">
+        <p class="n">574 → 54 GW</p>
+        <p class="t">In 2025, battery projects in Germany asked for 574 GW of grid connections. Grid operators approved 54 GW. <b>The connection is the bottleneck.</b></p>
+      </div>
+      <p class="src">Source: Bundesnetzagentur, grid connection requests for battery storage 2025, published on SMARD in August 2026.</p>
+    </div>
+  </section>
+
+  <section class="cta" aria-labelledby="cta-title">
+    <div class="wrap">
+      <h2 id="cta-title">Find a site for your project.</h2>
+      <div class="hero-ctas">
+        <a class="btn btn-dark btn-lg" href="#matches">Open Site Match</a>
+        <button class="btn btn-lg" type="button" data-action="new-site" data-requires-write>Offer capacity</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="app" hidden>
+  <div id="app-top"></div>
+  <section class="app-head" aria-labelledby="app-title">
+    <div class="wrap app-head-row">
+      <div>
+        <p class="eyebrow">Capflex · capacity marketplace</p>
+        <h1 id="app-title">Site Match</h1>
+      </div>
+      <div class="app-actions">
+        <div class="mk-roles" id="roles" role="group" aria-label="View as"></div>
+        <span id="auth"></span>
+        <span class="status" id="status"><i></i><span>Connecting</span></span>
+        <button class="btn" type="button" data-action="new-site" data-requires-write data-roles="industry capflex">Offer capacity</button>
+        <button class="btn btn-primary" type="button" data-action="new-project" data-requires-write data-roles="developer capflex">Register a project</button>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="kpis" id="kpis" aria-live="polite">
+        <div class="kpi"><span>Industrial sites open</span><b>0</b></div>
+        <div class="kpi"><span>Free import capacity</span><b>0<small>MW</small></b></div>
+        <div class="kpi"><span>Live bids</span><b>0</b></div>
+        <div class="kpi"><span>Leading bids, total fees</span><b>€0</b></div>
+      </div>
+    </div>
+  </section>
+  <div class="tabs-bar">
+    <div class="wrap">
+      <nav class="tabs" id="tabs" aria-label="Site Match sections">
+        <a href="#matches">Marketplace</a>
+        <a href="#listings">My sites</a>
+        <a href="#map">Grid map</a>
+        <a href="#projects">My projects</a>
+        <a href="#desk" hidden>Capflex desk</a>
+        <a href="#rules">How it works</a>
+      </nav>
+    </div>
+  </div>
+  <main>
+    <div class="wrap" id="view">
+      <p class="loading">Loading the marketplace…</p>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span class="foot-brand"><img src="brand/capflex-logo.svg" alt="Capflex" width="120" height="21"><span>Prototype · fit scores are indicative · the grid operator is notified before any project goes live</span></span>
+    <span class="owner" id="owner-tools"></span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div id="mk-drawer-root" hidden></div>
+
+<!-- Offer capacity -->
+<dialog id="dlg-offer" class="dlg-fine" aria-labelledby="ms-title">
+  <form id="form-offer" novalidate>
+    <div class="dlg-head">
+      <div>
+        <h2 id="ms-title">Offer capacity</h2>
+        <p>Developers see the region, the capacity and the space. Your company and address stay private.</p>
+      </div>
+      <button class="btn btn-quiet btn-small" type="button" data-close aria-label="Close">Close</button>
+    </div>
+    <div class="dlg-body">
+      <fieldset>
+        <legend>Where · shown to developers</legend>
+        <label class="f"><span>Country</span><select id="ms-country" required></select></label>
+        <label class="f"><span>Region</span><select id="ms-region" required></select></label>
+        <label class="f"><span>Voltage level at the connection</span><select id="ms-voltage" required></select></label>
+        <label class="f"><span>Bidding runs for</span><select id="ms-days"></select><small>Developers bid until then.</small></label>
+      </fieldset>
+      <fieldset>
+        <legend>Grid connection · shown to developers</legend>
+        <label class="f"><span>Contracted connection capacity (MW)</span><input id="ms-conn" type="number" inputmode="decimal" min="0.1" step="0.1" required><small>The agreed maximum in your connection agreement.</small></label>
+        <label class="f"><span>Peak load, last 12 months (MW)</span><input id="ms-peak" type="number" inputmode="decimal" min="0" step="0.1" required><small>Highest 15-minute value.</small></label>
+        <label class="f"><span>Flexible load (MW)</span><input id="ms-flex" type="number" inputmode="decimal" min="0" step="0.1" value="0"><small>Load you can shift or pause.</small></label>
+        <label class="f"><span>Feed-in allowed (MW)</span><input id="ms-feed" type="number" inputmode="decimal" min="0" step="0.1" value="0"><small>0 if the site may not export.</small></label>
+        <output class="live" id="ms-live" for="ms-conn ms-peak ms-flex ms-feed"></output>
+      </fieldset>
+      <fieldset>
+        <legend>Space and price · shown to developers</legend>
+        <label class="f"><span>Free area (m²)</span><input id="ms-area" type="number" inputmode="numeric" min="1" step="1" required></label>
+        <label class="f"><span>Available from</span><input id="ms-from" type="month" required placeholder="YYYY-MM" pattern="\d{4}-\d{2}"></label>
+        <label class="f"><span>Minimum bid (€ per MW)</span><input id="ms-reserve" type="number" inputmode="numeric" min="0" step="100" required><small>The lowest fee a developer can bid.</small></label>
+      </fieldset>
+      <fieldset class="private">
+        <legend>Private · only you and Capflex</legend>
+        <label class="f"><span>Company</span><input id="ms-company" required maxlength="80" autocomplete="organization"></label>
+        <label class="f"><span>Contact person or email</span><input id="ms-contact" required maxlength="120" autocomplete="email"></label>
+        <label class="f full"><span>Site address</span><input id="ms-address" required maxlength="160" autocomplete="street-address"><small>Capflex uses it to check the connection. Never shown in the marketplace.</small></label>
+        <div class="f full"><span>Exact location (optional)</span><div class="latlng"><input id="ms-lat" type="number" inputmode="decimal" step="any" min="45" max="56" placeholder="Latitude, e.g. 52.15" aria-label="Latitude"><input id="ms-lng" type="number" inputmode="decimal" step="any" min="2" max="18" placeholder="Longitude, e.g. 10.33" aria-label="Longitude"></div><small>Puts your site on your own map with the nearest substation. Developers only ever see the region.</small></div>
+      </fieldset>
+    </div>
+    <div class="dlg-foot">
+      <span class="form-error" id="ms-error" role="alert"></span>
+      <button class="btn" type="button" data-close>Cancel</button>
+      <button class="btn btn-dark" type="submit" id="ms-submit">Publish listing</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Register a project -->
+<dialog id="dlg-project" class="dlg-fine" aria-labelledby="mp-title">
+  <form id="form-project" novalidate>
+    <div class="dlg-head">
+      <div>
+        <h2 id="mp-title">Register a project</h2>
+        <p>Capflex matches it against every industrial site. The marketplace shows a code, the type and the size, never your company.</p>
+      </div>
+      <button class="btn btn-quiet btn-small" type="button" data-close aria-label="Close">Close</button>
+    </div>
+    <div class="dlg-body">
+      <fieldset>
+        <legend>Project · shown in the marketplace</legend>
+        <div class="f full" role="radiogroup" aria-label="Project type"><span>Type</span><div class="checks" id="mp-types"></div></div>
+        <label class="f"><span>Size (<span id="mp-unit">MW</span>)</span><input id="mp-mw" type="number" inputmode="decimal" min="0.1" step="0.1" required></label>
+        <label class="f" id="mp-mwh-wrap"><span>Energy (MWh)</span><input id="mp-mwh" type="number" inputmode="decimal" min="0.1" step="0.1"></label>
+        <label class="f"><span>Space needed (m²)</span><input id="mp-area" type="number" inputmode="numeric" min="1" step="1"><small>Leave empty to use a typical value.</small></label>
+        <label class="f"><span>Target start</span><input id="mp-cod" type="month" required placeholder="YYYY-MM" pattern="\d{4}-\d{2}"></label>
+        <output class="live" id="mp-live" for="mp-mw"></output>
+      </fieldset>
+      <fieldset>
+        <legend>Grid and location</legend>
+        <div class="f full"><span>Voltage levels you can connect at</span><div class="checks" id="mp-volts"></div></div>
+        <label class="f"><span>Country</span><select id="mp-country" required></select></label>
+        <label class="toggle" style="align-self:end"><input type="checkbox" id="mp-anyregion" checked> Any region in this country</label>
+        <div class="f full" id="mp-regions-wrap" hidden><span>Target regions</span><div class="checks regions" id="mp-regions"></div></div>
+      </fieldset>
+      <fieldset class="private">
+        <legend>Private · only you and Capflex</legend>
+        <label class="f"><span>Company</span><input id="mp-company" required maxlength="80" autocomplete="organization"></label>
+        <label class="f"><span>Contact person or email</span><input id="mp-contact" required maxlength="120" autocomplete="email"></label>
+      </fieldset>
+    </div>
+    <div class="dlg-foot">
+      <span class="form-error" id="mp-error" role="alert"></span>
+      <button class="btn" type="button" data-close>Cancel</button>
+      <button class="btn btn-dark" type="submit" id="mp-submit">Register project</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Sign in -->
+<dialog id="dlg-signin" class="dlg-fine dlg-small" aria-labelledby="si-title">
+  <form id="form-signin" novalidate>
+    <div class="dlg-head">
+      <div>
+        <h2 id="si-title">Sign in</h2>
+        <p>We email you a link. No password. Your company stays private in the marketplace.</p>
+      </div>
+      <button class="btn btn-quiet btn-small" type="button" data-close aria-label="Close">Close</button>
+    </div>
+    <div class="dlg-body">
+      <label class="f"><span>Email</span><input id="si-email" type="email" autocomplete="email" required></label>
+      <p class="mk-dim" id="si-msg" role="status"></p>
+    </div>
+    <div class="dlg-foot">
+      <span class="form-error" id="si-error" role="alert"></span>
+      <button class="btn" type="button" data-close>Cancel</button>
+      <button class="btn btn-dark" type="submit" id="si-submit">Send sign-in link</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="hero.js"></script>
+<script src="gridmap.js"></script>
+<script src="market.js"></script>
+<script src="router.js"></script>
+
+</body>
+</html>
