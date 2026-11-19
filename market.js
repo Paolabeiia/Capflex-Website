@@ -200,7 +200,8 @@
     var h = location.hash || '', i = h.indexOf('access_token=');
     if (i > 1 && h.charAt(i - 1) === '#') { try { history.replaceState(null, '', location.pathname + location.search + '#' + h.slice(i)); } catch (e) {} }
   })();
-  var sb = (window.supabase && CFG.url && CFG.key) ? window.supabase.createClient(CFG.url, CFG.key, { auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } }) : null;
+  var DEMO = !!CFG.demo;
+  var sb = (window.supabase && CFG.url && CFG.key) ? window.supabase.createClient(CFG.url, CFG.key, { auth: DEMO ? { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } : { flowType: 'implicit', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } }) : null;
   function ts(v) { var t = Date.parse(v); return isFinite(t) ? t : 0; }
   function owner(r) { return r.owner || ('demo~' + (r.demo_owner || 'x')); }
   function rowListing(r) {
@@ -217,6 +218,47 @@
   }
   function newKey(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function must(p) { return Promise.resolve(p).then(function (r) { if (r && r.error) throw r.error; return r; }); }
+
+  /* ---------- demo mode: no accounts. Reads come from the shared marketplace; whatever a visitor adds stays in this browser. ---------- */
+  var DEMO_ME = 'demo-visitor', LKEY = 'capflex-demo-rows-v1';
+  function lempty() { return { listings: [], projects: [], bids: [], site_private: [], project_private: [] }; }
+  function lread() {
+    try { var o = JSON.parse(localStorage.getItem(LKEY) || 'null'); if (o && o.listings && o.projects && o.bids) { o.site_private = o.site_private || []; o.project_private = o.project_private || []; return o; } } catch (e) {}
+    return lempty();
+  }
+  function lsave(o) { try { localStorage.setItem(LKEY, JSON.stringify(o)); } catch (e) {} }
+  // Stands in for the few database calls the page makes when it writes: upsert a row, or delete by column. Rows use the database column names.
+  function localTable(name) {
+    var idCol = name === 'site_private' ? 'listing_id' : name === 'project_private' ? 'project_id' : 'id';
+    return {
+      upsert: function (row) {
+        var o = lread(), t = o[name], r = {}, i = -1, c, k;
+        for (c in row) r[c] = row[c];
+        for (k = 0; k < t.length; k++) if (t[k][idCol] === row[idCol]) i = k;
+        r.created_at = (i >= 0 && t[i].created_at) || new Date().toISOString();
+        if (i >= 0) t[i] = r; else t.push(r);
+        lsave(o); return Promise.resolve({ error: null });
+      },
+      delete: function () {
+        return { eq: function (col, val) {
+          var o = lread();
+          o[name] = o[name].filter(function (r) { return r[col] !== val; });
+          if (name === 'listings') { o.bids = o.bids.filter(function (r) { return r.listing_id !== val; }); o.site_private = o.site_private.filter(function (r) { return r.listing_id !== val; }); }
+          if (name === 'projects') { o.bids = o.bids.filter(function (r) { return r.project_id !== val; }); o.project_private = o.project_private.filter(function (r) { return r.project_id !== val; }); }
+          lsave(o); return Promise.resolve({ error: null });
+        } };
+      }
+    };
+  }
+  function W(name) { return DEMO ? localTable(name) : sb.from(name); }
+  function addLocalRows() {
+    var o = lread();
+    state.listings = state.listings.concat(o.listings.map(rowListing));
+    state.projects = state.projects.concat(o.projects.map(rowProject));
+    state.bids = state.bids.concat(o.bids.map(rowBid));
+    o.site_private.forEach(function (r) { state.privSites[r.listing_id] = { company: r.company, address: r.address, contact: r.contact, lat: r.lat, lng: r.lng }; });
+    o.project_private.forEach(function (r) { state.privProjects[r.project_id] = { company: r.company, contact: r.contact }; });
+  }
   function write(p, ok) {
     return Promise.resolve(p).then(function () { if (ok) toast(ok); loadAll(); return true; }).catch(function (e) {
       var code = e && e.code;
@@ -241,6 +283,7 @@
       state.bids = res[2].data.map(rowBid);
       state.privSites = {}; (res[3].data || []).forEach(function (r) { state.privSites[r.listing_id] = { company: r.company, address: r.address, contact: r.contact, lat: r.lat, lng: r.lng }; });
       state.privProjects = {}; (res[4].data || []).forEach(function (r) { state.privProjects[r.project_id] = { company: r.company, contact: r.contact }; });
+      if (DEMO) addLocalRows();
       state.loaded = { listings: true, projects: true, bids: true }; state.slow = false;
     }).catch(function () { toast('Could not load the marketplace. Reload the page to try again.', true); })
       .then(function () { loading = null; render(); if (again) { again = false; loadAll(); } });
@@ -259,6 +302,13 @@
     if (!sb) { state.mode = 'local'; state.loaded = { listings: true, projects: true, bids: true }; render(); return; }
     state.mode = 'db';
     setTimeout(function () { if (!loaded()) { state.slow = true; render(); } }, 10000);
+    if (DEMO) {
+      state.me = DEMO_ME; state.email = ''; state.canWrite = true; state.isOwner = false;
+      if (state.role === 'capflex') state.role = 'developer';
+      loadAll();
+      sb.channel('market').on('postgres_changes', { event: '*', schema: 'public' }, reloadSoon).subscribe();
+      return;
+    }
     sb.auth.getSession().then(function (r) { setUser(r.data && r.data.session); loadAll(); });
     sb.auth.onAuthStateChange(function (ev, session) {
       if (ev === 'INITIAL_SESSION') return;
@@ -353,10 +403,10 @@
     var st = $('#status');
     if (st) {
       st.className = 'status' + (state.mode === 'db' ? ' live' : state.mode === 'local' ? ' local' : '');
-      st.lastElementChild.textContent = state.mode === 'db' ? 'Live marketplace' : state.mode === 'local' ? 'Offline preview' : 'Connecting';
+      st.lastElementChild.textContent = state.mode === 'db' ? (DEMO ? 'Demo marketplace' : 'Live marketplace') : state.mode === 'local' ? 'Offline preview' : 'Connecting';
     }
     var au = $('#auth');
-    if (au) au.innerHTML = !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button><button class="btn btn-small btn-quiet" type="button" data-action="signup">Create account</button>';
+    if (au) au.innerHTML = DEMO ? '<span class="mk-auth"><span title="Nothing you add here is shared or sent anywhere">Demo: your changes stay in this browser</span><button class="btn btn-small btn-quiet" type="button" data-action="reset-demo">Reset mine</button></span>' : !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button><button class="btn btn-small btn-quiet" type="button" data-action="signup">Create account</button>';
     var role = ROLES[state.role] ? state.role : 'developer';
     var rs = $('#roles');
     if (rs) rs.innerHTML = '<span>View as</span>' + Object.keys(ROLES).filter(function (r) { return !ROLES[r].owner || state.isOwner; }).map(function (r) {
@@ -884,7 +934,7 @@
     var btn = $('#ms-submit'); btn.disabled = true;
     var row = { id: key, owner: state.me, code: data.code, country: data.country, region: data.region, voltage: data.voltage, connection_mw: data.connectionMW, peak_mw: data.peakMW,
       flex_mw: data.flexMW, feed_in_mw: data.feedInMW, area_m2: data.areaM2, available_from: data.availableFrom, reserve_per_mw: data.reservePerMW, closes_at: new Date(data.closesAt).toISOString() };
-    var p = must(sb.from('listings').upsert(row)).then(function () { return must(sb.from('site_private').upsert({ listing_id: key, owner: state.me, company: priv.company, address: priv.address, contact: priv.contact, lat: priv.lat, lng: priv.lng })); });
+    var p = must(W('listings').upsert(row)).then(function () { return must(W('site_private').upsert({ listing_id: key, owner: state.me, company: priv.company, address: priv.address, contact: priv.contact, lat: priv.lat, lng: priv.lng })); });
     write(p, l ? 'Listing updated.' : 'Listing published as ' + data.code + '. Developers can bid now.').then(function (ok) {
       btn.disabled = false;
       if (!ok) { $('#ms-error').textContent = 'Could not save this listing. Try again.'; return; }
@@ -955,7 +1005,7 @@
     var priv = { company: $('#mp-company').value.trim(), contact: $('#mp-contact').value.trim() };
     var btn = $('#mp-submit'); btn.disabled = true;
     var row = { id: key, owner: state.me, type: data.type, code: data.code, mw: data.mw, mwh: data.mwh, area_m2: data.areaM2, voltages: data.voltages, country: data.country, regions: data.regions, cod: data.cod };
-    var pr = must(sb.from('projects').upsert(row)).then(function () { return must(sb.from('project_private').upsert({ project_id: key, owner: state.me, company: priv.company, contact: priv.contact })); });
+    var pr = must(W('projects').upsert(row)).then(function () { return must(W('project_private').upsert({ project_id: key, owner: state.me, company: priv.company, contact: priv.contact })); });
     write(pr, p ? 'Project updated.' : 'Project ' + data.code + ' registered. These are the industrial sites it fits.').then(function (ok) {
       btn.disabled = false;
       if (!ok) { $('#mp-error').textContent = 'Could not save this project. Try again.'; return; }
@@ -977,26 +1027,26 @@
     var btn = $('#mk-bid-submit'); if (btn) btn.disabled = true;
     state.bid.perMW = String(per);
     var row = { id: key, owner: state.me, listing_id: data.listingId, project_id: data.projectId, per_mw: data.perMW, placed_at: new Date(data.placedAt).toISOString() };
-    write(must(sb.from('bids').upsert(row)), (existing ? 'Bid updated to ' : 'Bid placed: ') + money(per) + ' per MW on ' + l.code + '.').then(function () {
+    write(must(W('bids').upsert(row)), (existing ? 'Bid updated to ' : 'Bid placed: ') + money(per) + ' per MW on ' + l.code + '.').then(function () {
       if (btn) btn.disabled = false;
       var box = $('#mk-d-bid'); if (box) { box.innerHTML = bidForm(l); updateBidPreview(l); }
     });
   }
   function withdraw(key) {
-    write(must(sb.from('bids').delete().eq('id', key)), 'Bid withdrawn.').then(function () {
+    write(must(W('bids').delete().eq('id', key)), 'Bid withdrawn.').then(function () {
       var l = listing(state.sel); state.bid.perMW = '';
       var box = $('#mk-d-bid'); if (l && box) { box.innerHTML = bidForm(l); updateBidPreview(l); }
     });
   }
   function deleteListing(id) {
     var l = listing(id); if (!l || !mine(l)) return;
-    var p = must(sb.from('listings').delete().eq('id', l.id));
+    var p = must(W('listings').delete().eq('id', l.id));
     if (state.sel === id) state.sel = null;
     write(p, 'Listing deleted.');
   }
   function deleteProject(id) {
     var pr = proj(id); if (!pr || !mine(pr)) return;
-    var p = must(sb.from('projects').delete().eq('id', pr.id));
+    var p = must(W('projects').delete().eq('id', pr.id));
     if (state.filters.project === id) { state.filters.project = 'all'; if (state.filters.sort === 'fit') state.filters.sort = 'free'; }
     write(p, 'Project deleted.');
   }
@@ -1027,6 +1077,7 @@
     else if (a === 'show-matches') { state.filters.project = id; state.filters.sort = 'fit'; state.filters.type = 'all'; if (location.hash !== '#matches') location.hash = 'matches'; else render(); }
     else if (a === 'withdraw') withdraw(id);
     else if (a === 'remove-demo') removeDemo();
+    else if (a === 'reset-demo') { lsave(lempty()); state.confirm = null; toast('Your changes were removed.'); loadAll(); }
     else if (a === 'signin') openSignIn(false);
     else if (a === 'signup') openSignIn(true);
     else if (a === 'auth-mode') setAuthMode(!signupMode);

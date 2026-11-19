@@ -9,9 +9,11 @@ Plug new energy projects into grid capacity that factories already have.
 
 The Supabase URL and anon key in `config.js` are public by design; row level security decides what anyone can read or write.
 
-## Accounts
+## Demo mode (no accounts)
 
-Anyone can create an account with an email and a password (Create account on the Site Match page). They can also sign in with a link sent by email.
+`config.js` has `demo: true`. There is no sign-in or registration. Everyone reads the shared marketplace, and anything a visitor adds (a project, a site, a bid) is saved only in their own browser. Nothing is written to Supabase. "Reset mine" in the header clears it.
 
-- With **Confirm email** switched on in Supabase (Authentication, Providers, Email), a new user must open a confirmation link before signing in.
-- Supabase's built-in email sender allows only a few emails per hour for the whole project. Beyond that, sign-up and sign-in links fail with "email rate limit exceeded". For real use, either set up your own SMTP sender in Supabase or switch Confirm email off, so that registering signs the user in at once.
+To bring accounts back, set `demo: false`. The sign-in and Create account screens are still in the code. Two Supabase facts matter then:
+
+- With **Confirm email** switched on (Authentication, Sign In / Providers), a new user must open a confirmation link before signing in.
+- Supabase's built-in email sender allows only a few emails per hour for the whole project. Beyond that, sign-up and sign-in links fail with "email rate limit exceeded". Set up your own SMTP sender, or switch Confirm email off.
