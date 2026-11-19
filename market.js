@@ -303,8 +303,8 @@
     state.mode = 'db';
     setTimeout(function () { if (!loaded()) { state.slow = true; render(); } }, 10000);
     if (DEMO) {
-      state.me = DEMO_ME; state.email = ''; state.canWrite = true; state.isOwner = false;
-      if (state.role === 'capflex') state.role = 'developer';
+      // Demo: every view is open, including Capflex, so the whole marketplace can be shown without signing in.
+      state.me = DEMO_ME; state.email = ''; state.canWrite = true; state.isOwner = true;
       loadAll();
       sb.channel('market').on('postgres_changes', { event: '*', schema: 'public' }, reloadSoon).subscribe();
       return;
@@ -441,7 +441,7 @@
     var ot = $('#owner-tools');
     if (ot) {
       var hasDemo = state.listings.some(function (x) { return x.sample; }) || state.projects.some(function (x) { return x.sample; });
-      ot.innerHTML = (state.isOwner && hasDemo) ? '<span>Demo marketplace is showing.</span><button class="btn btn-small" type="button" data-action="remove-demo">Remove demo data</button>' : '';
+      ot.innerHTML = (state.isOwner && hasDemo && !DEMO) ? '<span>Demo marketplace is showing.</span><button class="btn btn-small" type="button" data-action="remove-demo">Remove demo data</button>' : '';
     }
   }
   function kpi(v, unit, label) { return '<div class="kpi"><span>' + esc(label) + '</span><b>' + esc(v) + (unit ? '<small>' + esc(unit) + '</small>' : '') + '</b></div>'; }
