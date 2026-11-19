@@ -311,15 +311,17 @@
     <div class="dlg-head">
       <div>
         <h2 id="si-title">Sign in</h2>
-        <p>Sign in with your email and password. Your company stays private in the marketplace.</p>
+        <p id="si-desc">Sign in with your email and password. Your company stays private in the marketplace.</p>
       </div>
       <button class="btn btn-quiet btn-small" type="button" data-close aria-label="Close">Close</button>
     </div>
     <div class="dlg-body">
       <label class="f"><span>Email</span><input id="si-email" type="email" autocomplete="email" required></label>
       <label class="f" style="margin-top:12px"><span>Password</span><input id="si-pass" type="password" autocomplete="current-password"></label>
+      <label class="f" id="si-pass2-wrap" style="margin-top:12px" hidden><span>Repeat password</span><input id="si-pass2" type="password" autocomplete="new-password" minlength="8"></label>
       <p class="mk-dim" id="si-msg" role="status"></p>
-      <button class="linkbtn" type="button" data-action="signin-link" style="font-size:13px;margin-top:4px">Email me a sign-in link instead</button>
+      <button class="linkbtn" type="button" data-action="signin-link" id="si-linkbtn" style="font-size:13px;margin-top:4px">Email me a sign-in link instead</button>
+      <div style="margin-top:10px"><button class="linkbtn" type="button" data-action="auth-mode" id="si-toggle" style="font-size:13px">New here? Create an account</button></div>
     </div>
     <div class="dlg-foot">
       <span class="form-error" id="si-error" role="alert"></span>

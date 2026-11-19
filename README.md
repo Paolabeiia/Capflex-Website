@@ -8,3 +8,10 @@ Plug new energy projects into grid capacity that factories already have.
 - **Grid map:** high-voltage grid from OpenStreetMap (© OpenStreetMap contributors, ODbL), borders from Natural Earth, congestion by German state from the Bundesnetzagentur's congestion management reports 2021 and 2022.
 
 The Supabase URL and anon key in `config.js` are public by design; row level security decides what anyone can read or write.
+
+## Accounts
+
+Anyone can create an account with an email and a password (Create account on the Site Match page). They can also sign in with a link sent by email.
+
+- With **Confirm email** switched on in Supabase (Authentication, Providers, Email), a new user must open a confirmation link before signing in.
+- Supabase's built-in email sender allows only a few emails per hour for the whole project. Beyond that, sign-up and sign-in links fail with "email rate limit exceeded". For real use, either set up your own SMTP sender in Supabase or switch Confirm email off, so that registering signs the user in at once.

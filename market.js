@@ -268,21 +268,57 @@
     });
     sb.channel('market').on('postgres_changes', { event: '*', schema: 'public' }, reloadSoon).subscribe();
   }
-  function openSignIn() {
-    var d = $('#dlg-signin'); if (!d) return;
+  var signupMode = false;
+  // One dialog for both: sign in with a password, or create an account with email and password.
+  function setAuthMode(signup) {
+    signupMode = !!signup;
+    $('#si-title').textContent = signup ? 'Create your account' : 'Sign in';
+    $('#si-desc').textContent = signup
+      ? 'Choose a password with at least 8 characters. We email you a link to confirm your address. Your company stays private in the marketplace.'
+      : 'Sign in with your email and password. Your company stays private in the marketplace.';
+    $('#si-pass').autocomplete = signup ? 'new-password' : 'current-password';
+    $('#si-pass2-wrap').hidden = !signup;
+    $('#si-linkbtn').hidden = signup;
+    $('#si-submit').textContent = signup ? 'Create account' : 'Sign in';
+    $('#si-toggle').textContent = signup ? 'I already have an account' : 'New here? Create an account';
     $('#si-msg').textContent = ''; $('#si-error').textContent = '';
+  }
+  function openSignIn(signup) {
+    var d = $('#dlg-signin'); if (!d) return;
+    setAuthMode(signup);
+    $('#si-pass').value = ''; $('#si-pass2').value = '';
     d.showModal();
+  }
+  function submitSignUp(email, pass, pass2) {
+    if (pass.length < 8) { $('#si-error').textContent = 'Use at least 8 characters.'; return; }
+    if (pass !== pass2) { $('#si-error').textContent = 'The two passwords do not match.'; return; }
+    var btn = $('#si-submit'); btn.disabled = true;
+    var exists = 'This email already has an account. Sign in instead, or use the email link.';
+    sb.auth.signUp({ email: email, password: pass, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) {
+      btn.disabled = false;
+      if (r.error) {
+        var m = r.error.message || '';
+        $('#si-error').textContent = /already|registered/i.test(m) ? exists : /rate limit/i.test(m) ? 'Too many emails right now. Try again in an hour.' : 'Could not create the account: ' + m;
+        return;
+      }
+      $('#si-pass').value = ''; $('#si-pass2').value = '';
+      // The service hides an existing address by returning a user with no identities.
+      if (r.data && r.data.user && r.data.user.identities && r.data.user.identities.length === 0) { $('#si-error').textContent = exists; return; }
+      if (r.data && r.data.session) { $('#dlg-signin').close(); toast('Account created. You are signed in.'); location.hash = 'matches'; return; }
+      $('#si-msg').textContent = 'Check your inbox: we sent a confirmation link to ' + email + '. Open it, then your account is ready.';
+    });
   }
   function submitSignIn(e) {
     e.preventDefault();
     var email = $('#si-email').value.trim(), pass = $('#si-pass').value;
     $('#si-error').textContent = ''; $('#si-msg').textContent = '';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#si-error').textContent = 'Enter a valid email address.'; return; }
+    if (signupMode) { submitSignUp(email, pass, $('#si-pass2').value); return; }
     if (!pass) { $('#si-error').textContent = 'Enter your password, or use the email link.'; return; }
     var btn = $('#si-submit'); btn.disabled = true;
     sb.auth.signInWithPassword({ email: email, password: pass }).then(function (r) {
       btn.disabled = false;
-      if (r.error) { $('#si-error').textContent = /invalid/i.test(r.error.message || '') ? 'Email or password is wrong.' : 'Could not sign in: ' + r.error.message; return; }
+      if (r.error) { $('#si-error').textContent = /not confirmed/i.test(r.error.message || '') ? 'Confirm your email first: open the link we sent you, then sign in.' : /invalid/i.test(r.error.message || '') ? 'Email or password is wrong.' : 'Could not sign in: ' + r.error.message; return; }
       $('#si-pass').value = '';
       $('#dlg-signin').close();
       toast('Signed in as ' + email + '.');
@@ -320,7 +356,7 @@
       st.lastElementChild.textContent = state.mode === 'db' ? 'Live marketplace' : state.mode === 'local' ? 'Offline preview' : 'Connecting';
     }
     var au = $('#auth');
-    if (au) au.innerHTML = !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button>';
+    if (au) au.innerHTML = !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button><button class="btn btn-small btn-quiet" type="button" data-action="signup">Create account</button>';
     var role = ROLES[state.role] ? state.role : 'developer';
     var rs = $('#roles');
     if (rs) rs.innerHTML = '<span>View as</span>' + Object.keys(ROLES).filter(function (r) { return !ROLES[r].owner || state.isOwner; }).map(function (r) {
@@ -509,7 +545,7 @@
     var head = '<section class="mk-dsec mk-bid">';
     if (!isOpen(l)) return head + '<p class="mk-label">Bidding closed</p><p class="mk-dim">This auction has ended. Capflex contacts the developers in the allocation.</p></section>';
     if (mine(l)) return head + '<p class="mk-label">Your listing</p><p class="mk-dim">Developers bid on your capacity here. You see every bid as it comes in; nobody sees your company or address.</p></section>';
-    if (!state.me) return head + '<p class="mk-label">Place a bid</p><p class="mk-dim">Sign in with your email to register a project and bid. Your company stays private.</p><div class="mk-bidacts"><button class="btn btn-dark" type="button" data-action="signin">Sign in</button></div></section>';
+    if (!state.me) return head + '<p class="mk-label">Place a bid</p><p class="mk-dim">Sign in or create an account with your email to register a project and bid. Your company stays private.</p><div class="mk-bidacts"><button class="btn btn-dark" type="button" data-action="signin">Sign in</button><button class="btn" type="button" data-action="signup">Create account</button></div></section>';
     var mineFit = state.projects.filter(mine).map(function (p) { return { p: p, f: fit(l, p) }; }).filter(function (m) { return m.f.ok; });
     if (!mineFit.length) return head + '<p class="mk-label">Place a bid</p><p class="mk-dim">' + (state.projects.some(mine) ? 'None of your projects fits this site.' : 'Register a project to bid on this site.') + '</p><div class="mk-bidacts"><button class="btn btn-dark" type="button" data-action="new-project">Register a project</button></div></section>';
     var pid = state.bid.projectId && mineFit.some(function (m) { return m.p.id === state.bid.projectId; }) ? state.bid.projectId : mineFit[0].p.id;
@@ -991,7 +1027,9 @@
     else if (a === 'show-matches') { state.filters.project = id; state.filters.sort = 'fit'; state.filters.type = 'all'; if (location.hash !== '#matches') location.hash = 'matches'; else render(); }
     else if (a === 'withdraw') withdraw(id);
     else if (a === 'remove-demo') removeDemo();
-    else if (a === 'signin') openSignIn();
+    else if (a === 'signin') openSignIn(false);
+    else if (a === 'signup') openSignIn(true);
+    else if (a === 'auth-mode') setAuthMode(!signupMode);
     else if (a === 'signin-link') sendSignInLink();
     else if (a === 'password') { var dp = $('#dlg-pass'); if (dp) { $('#pw-msg').textContent = ''; $('#pw-error').textContent = ''; dp.showModal(); } }
     else if (a === 'signout') { if (sb) sb.auth.signOut(); }
