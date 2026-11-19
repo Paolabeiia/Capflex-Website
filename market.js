@@ -195,7 +195,12 @@
   /* ---------- data: Supabase. Everyone reads the marketplace; signed-in people write their own rows;
      row level security keeps company names and exact locations visible only to the lister and Capflex. ---------- */
   var CFG = window.CAPFLEX_CONFIG || {};
-  var sb = (window.supabase && CFG.url && CFG.key) ? window.supabase.createClient(CFG.url, CFG.key) : null;
+  // A sign-in link can come back as "#matches#access_token=…"; keep only the token part so Supabase can read it.
+  (function () {
+    var h = location.hash || '', i = h.indexOf('access_token=');
+    if (i > 1 && h.charAt(i - 1) === '#') { try { history.replaceState(null, '', location.pathname + location.search + '#' + h.slice(i)); } catch (e) {} }
+  })();
+  var sb = (window.supabase && CFG.url && CFG.key) ? window.supabase.createClient(CFG.url, CFG.key, { auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } }) : null;
   function ts(v) { var t = Date.parse(v); return isFinite(t) ? t : 0; }
   function owner(r) { return r.owner || ('demo~' + (r.demo_owner || 'x')); }
   function rowListing(r) {
@@ -255,7 +260,12 @@
     state.mode = 'db';
     setTimeout(function () { if (!loaded()) { state.slow = true; render(); } }, 10000);
     sb.auth.getSession().then(function (r) { setUser(r.data && r.data.session); loadAll(); });
-    sb.auth.onAuthStateChange(function (ev, session) { if (ev === 'INITIAL_SESSION') return; setUser(session); reloadSoon(); });
+    sb.auth.onAuthStateChange(function (ev, session) {
+      if (ev === 'INITIAL_SESSION') return;
+      setUser(session); reloadSoon();
+      // Back from the email link: open Site Match instead of the landing page.
+      if (ev === 'SIGNED_IN') setTimeout(function () { var h = location.hash.slice(1); if (!h || h.indexOf('access_token') >= 0) location.hash = 'matches'; }, 0);
+    });
     sb.channel('market').on('postgres_changes', { event: '*', schema: 'public' }, reloadSoon).subscribe();
   }
   function openSignIn() {
@@ -268,7 +278,7 @@
     var email = $('#si-email').value.trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#si-error').textContent = 'Enter a valid email address.'; return; }
     var btn = $('#si-submit'); btn.disabled = true;
-    sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname + '#matches' } }).then(function (r) {
+    sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) {
       btn.disabled = false;
       if (r.error) { $('#si-error').textContent = /not authori[sz]ed/i.test(r.error.message || '') ? 'Sign-in is open to the Capflex team for now. Write to Capflex to get access.' : 'Could not send the link: ' + r.error.message; return; }
       $('#si-msg').textContent = 'Check your inbox: we sent a sign-in link to ' + email + '.';
