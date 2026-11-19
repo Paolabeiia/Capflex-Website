@@ -403,10 +403,10 @@
     var st = $('#status');
     if (st) {
       st.className = 'status' + (state.mode === 'db' ? ' live' : state.mode === 'local' ? ' local' : '');
-      st.lastElementChild.textContent = state.mode === 'db' ? (DEMO ? 'Demo marketplace' : 'Live marketplace') : state.mode === 'local' ? 'Offline preview' : 'Connecting';
+      st.lastElementChild.textContent = state.mode === 'db' ? (DEMO ? 'Marketplace' : 'Live marketplace') : state.mode === 'local' ? 'Offline preview' : 'Connecting';
     }
     var au = $('#auth');
-    if (au) au.innerHTML = DEMO ? '<span class="mk-auth"><button class="btn btn-small btn-quiet" type="button" data-action="reset-demo" title="Remove what you added here. Nothing you add is shared or sent anywhere.">Reset demo</button></span>' : !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button><button class="btn btn-small btn-quiet" type="button" data-action="signup">Create account</button>';
+    if (au) au.innerHTML = DEMO ? '<span class="mk-auth"><button class="btn btn-small btn-quiet" type="button" data-action="reset-demo" title="Remove what you added here. Nothing you add is shared or sent anywhere.">Reset</button></span>' : !sb ? '' : state.me ? '<span class="mk-auth"><span title="Signed in">' + esc(state.email) + '</span><button class="btn btn-small btn-quiet" type="button" data-action="password">Password</button><button class="btn btn-small btn-quiet" type="button" data-action="signout">Sign out</button></span>' : '<button class="btn btn-small" type="button" data-action="signin">Sign in</button><button class="btn btn-small btn-quiet" type="button" data-action="signup">Create account</button>';
     var role = ROLES[state.role] ? state.role : 'developer';
     var rs = $('#roles');
     if (rs) rs.innerHTML = '<span>View as</span>' + Object.keys(ROLES).filter(function (r) { return !ROLES[r].owner || state.isOwner; }).map(function (r) {
@@ -498,7 +498,7 @@
       var c = cap(l), bids = bidsFor(l.id), top = bids.length ? n(bids[0].perMW) : 0;
       var share = c.conn ? Math.min(100, c.imp / c.conn * 100) : 0;
       h += '<tr data-action="open" data-id="' + esc(l.id) + '"' + (state.sel === l.id ? ' class="is-sel"' : '') + '>';
-      h += '<td class="mk-c-site"><button class="mk-code" type="button" data-action="open" data-id="' + esc(l.id) + '">' + esc(l.code) + '</button>' + (mine(l) ? '<span class="mk-own">Yours</span>' : '') + (l.sample ? '<span class="mk-demo">Demo</span>' : '') + '<span class="mk-place">' + esc(place(l)) + '</span></td>';
+      h += '<td class="mk-c-site"><button class="mk-code" type="button" data-action="open" data-id="' + esc(l.id) + '">' + esc(l.code) + '</button>' + (mine(l) ? '<span class="mk-own">Yours</span>' : '') + '<span class="mk-place">' + esc(place(l)) + '</span></td>';
       h += '<td data-l="Grid"><span class="mk-volt">' + esc(l.voltage) + '</span><span class="mk-place">' + esc(gridArea(l.country, l.region)) + '</span></td>';
       h += '<td class="r" data-l="Free capacity"><span class="mk-mw">' + fmt(c.imp) + '<small>MW</small></span><span class="mk-mini" aria-hidden="true"><i style="width:' + share.toFixed(1) + '%"></i></span><span class="mk-place">' + fmt(c.exp) + ' MW feed-in</span></td>';
       h += '<td class="r" data-l="Space"><span class="mk-mw">' + fmt(n(l.areaM2), 0) + '<small>m²</small></span></td>';
@@ -538,7 +538,7 @@
       setTimeout(function () { var c = root.querySelector('.mk-x'); if (c) c.focus(); }, 30);
     }
     var c = cap(l), alloc = allocate(l, bidsFor(l.id)), matches = matchesFor(l), combo = bestCombo(l);
-    $('#mk-d-head').innerHTML = '<div class="mk-dhead"><div><p class="mk-label">Industrial site' + (l.sample ? ' · Demo' : '') + '</p><h2 class="mk-dcode" id="mk-d-title">' + esc(l.code) + '</h2><p class="mk-dplace">' + esc(place(l)) + ' · ' + esc(gridArea(l.country, l.region)) + ' area · ' + esc(l.voltage) + '</p></div><div class="mk-dright">' + closesCell(l) + '<button class="mk-x" type="button" data-action="close" aria-label="Close">×</button></div></div>';
+    $('#mk-d-head').innerHTML = '<div class="mk-dhead"><div><p class="mk-label">Industrial site</p><h2 class="mk-dcode" id="mk-d-title">' + esc(l.code) + '</h2><p class="mk-dplace">' + esc(place(l)) + ' · ' + esc(gridArea(l.country, l.region)) + ' area · ' + esc(l.voltage) + '</p></div><div class="mk-dright">' + closesCell(l) + '<button class="mk-x" type="button" data-action="close" aria-label="Close">×</button></div></div>';
 
     var b = '<section class="mk-dsec"><div class="mk-big">' +
       '<div><span class="mk-label">Free import</span><b>' + fmt(c.imp) + '<small>MW</small></b><span>' + fmt(c.firm) + ' MW firm + ' + fmt(c.flex) + ' MW flexible</span></div>' +
@@ -655,7 +655,7 @@
     var own = state.listings.filter(mine);
     if (own.length) return { sites: own, demo: false, company: (state.privSites[own[0].key] || {}).company || '' };
     var sites = state.listings.filter(function (l) { return l.ownerId === 'demo~factory1'; });
-    if (sites.length) return { sites: sites, demo: true, company: (state.privSites[sites[0].id] || {}).company || 'Demo factory' };
+    if (sites.length) return { sites: sites, demo: true, company: (state.privSites[sites[0].id] || {}).company || 'Factory' };
     return { sites: [], demo: false, company: '' };
   }
   function privOf(l) {
@@ -675,7 +675,7 @@
     var h = '<div class="mk-head"><div><h2 class="mk-title">My sites.</h2><p class="mk-sub">The grid capacity you offer and who wants it. Developers see a code, the region, the capacity and the space. Never your company or address.</p></div>' + (state.canWrite ? '<button class="btn btn-dark" type="button" data-action="new-site">Offer capacity</button>' : '') + '</div>';
     if (!loaded()) return h + '<p class="loading">Loading…</p>';
     if (!fs.sites.length) return h + '<div class="mk-empty-line">You have not listed an industrial site yet. Offer the grid capacity your factory doesn\'t use: developers bid for it, and only Capflex learns who you are.</div>';
-    if (fs.demo) h += '<div class="mk-banner"><span class="mk-demo">Demo</span><span>You are seeing Site Match as <b>' + esc(fs.company) + '</b>, a factory with ' + fs.sites.length + ' sites. This is a demo factory: on a real account you see your own sites here.</span></div>';
+    if (fs.demo) h += '<div class="mk-banner"><span>You are seeing Site Match as <b>' + esc(fs.company) + '</b>, a factory with ' + fs.sites.length + ' sites.</span></div>';
     else if (fs.company) h += '<div class="mk-banner"><span class="mk-own">Private</span><span><b>' + esc(fs.company) + '</b> · only you and Capflex see your name and locations.</span></div>';
     h += '<div class="mk-mapbox mk-mapbox-f"><div id="mk-map-slot" class="mk-map-slot short"></div><div class="mk-maplegend"><span class="mk-lg"><i class="pin"></i>Your site</span><span class="mk-lg"><i class="dot"></i>Nearest substation</span><span class="mk-lg"><i class="ln l380"></i>380 kV</span><span class="mk-lg"><i class="ln l220"></i>220 kV</span><span class="mk-lg"><i class="ln l150"></i>150 kV</span></div></div>';
     return h + fs.sites.map(siteCard).join('');
@@ -833,7 +833,7 @@
     state.projects.forEach(function (p) {
       var pv = state.privProjects[p.id] || null;
       h += '<tr class="static"><td>' + typeBadge(p.type) + '<span class="mk-pcode">' + esc(p.code) + '</span></td>';
-      if (p.sample) h += '<td colspan="2"><span class="mk-dim">Demo project</span></td>';
+      if (p.sample) h += '<td colspan="2"><span class="mk-dim">Not listed</span></td>';
       else h += '<td>' + esc(pv && pv.company || '—') + '</td><td>' + esc(pv && pv.contact || '—') + '</td>';
       h += '<td class="r">' + size(p) + '</td></tr>';
     });
